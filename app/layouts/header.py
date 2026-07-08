@@ -5,56 +5,47 @@ Builds the compact top header bar containing the branding and a dataset
 status pill on the right. Accepts no reactive inputs — fully static.
 """
 
-from dash import html
-from app.layouts.theme import (
-    COLOR_SURFACE, COLOR_BORDER, COLOR_TEXT_PRIMARY,
-    COLOR_TEXT_SECONDARY, COLOR_ACCENT_PRIMARY
-)
+from dash import html, dcc
+from app.layouts.theme import COLOR_TEXT_SECONDARY
 
 
-def Header(n_samples: int, n_genes: int, n_classes: int) -> html.Div:
+def Header(n_samples: int, n_genes: int, n_classes: int) -> html.Header:
     """
     Returns the top dashboard header.
-
-    Parameters
-    ----------
-    n_samples : int
-        Total patient / sample count loaded at startup.
-    n_genes : int
-        Number of variance-filtered genes.
-    n_classes : int
-        Number of tumor subtypes (always 5 for this dataset).
     """
     return html.Header(
-        id="dash-header",
+        className="top-header",
         children=[
-            # Left: branding
             html.Div(
-                className="header-brand",
+                className="header-left-group",
                 children=[
-                    html.Span("Onco", className="brand-onco"),
-                    html.Span("Lens", className="brand-lens"),
-                    html.Span(
-                        "Brain Tumor Visual Analytics Dashboard",
-                        className="brand-subtitle"
-                    ),
+                    html.H2("Brain Tumor Visual Analytics", className="header-title"),
+                    html.Div(
+                        className="header-pill",
+                        children=[
+                            html.Span(className="pulse-dot"),
+                            html.Span(f"{n_samples} Samples", className="pill-text"),
+                            html.Span("|", className="pill-divider"),
+                            html.Span(f"{n_genes} Genes", className="pill-text"),
+                            html.Span("|", className="pill-divider"),
+                            html.Span(f"{n_classes} Subtypes", className="pill-text")
+                        ]
+                    )
                 ]
             ),
-            # Right: compact dataset pill
             html.Div(
-                className="header-meta",
+                className="header-right-group",
                 children=[
-                    _pill(str(n_samples), "Samples"),
-                    _pill(str(n_genes), "Genes"),
-                    _pill(str(n_classes), "Classes"),
-                    html.Span(
-                        "CS661 • Group 11",
-                        style={
-                            "fontSize": "0.78rem",
-                            "color": COLOR_TEXT_SECONDARY,
-                            "marginLeft": "1rem",
-                            "fontWeight": "500"
-                        }
+                    html.Div(
+                        className="search-container",
+                        children=[
+                            html.Span("🔍", className="search-icon"),
+                            dcc.Input(
+                                type="text",
+                                placeholder="Search genes, pathways...",
+                                className="search-input"
+                            )
+                        ]
                     )
                 ]
             )

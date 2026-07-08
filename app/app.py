@@ -112,13 +112,21 @@ _default_patient = _patient_options_startup[0]["value"] if _patient_options_star
 _default_x = df_top_pairs.iloc[0]["Probe X"]
 _default_y = df_top_pairs.iloc[0]["Probe Y"]
 
-# Default profile gene (highest-variance with a valid symbol)
+# Default profile gene + top-variance gene symbol.
+# Both should refer to the SAME gene: the highest-ranked (by variance) probe
+# that actually has an annotated symbol. Previously the KPI looked only at
+# the single #1-ranked row, so if that specific probe lacked a symbol the
+# "TOP VARIANCE GENE" card showed "—" even though a valid symbol existed
+# a few ranks down — exactly what default_profile's loop already guards
+# against. One shared search now drives both.
 _default_profile = None
+_top_gene_sym = "—"
 _df_ann_sorted = df_annotated.dropna(subset=["Rank"]).sort_values("Rank")
 for _, _row in _df_ann_sorted.iterrows():
     _sym = _row.get("Gene Symbol", "")
     if pd.notna(_sym) and str(_sym).strip() not in ("", "nan"):
         _default_profile = _row["ProbeID"]
+        _top_gene_sym = str(_sym)
         break
 if not _default_profile:
     _default_profile = _df_ann_sorted.iloc[0]["ProbeID"]
@@ -126,14 +134,6 @@ if not _default_profile:
 # Best pair display string
 _best_pair_row = df_top_pairs.iloc[0]
 _best_pair_str = f"{_best_pair_row['Gene X']} & {_best_pair_row['Gene Y']}"
-
-# Top-variance gene symbol
-_top_gene_sym = "—"
-_top_gene_row = _df_ann_sorted.iloc[0] if not _df_ann_sorted.empty else None
-if _top_gene_row is not None:
-    _sym = _top_gene_row.get("Gene Symbol", "")
-    if pd.notna(_sym) and str(_sym).strip() not in ("", "nan"):
-        _top_gene_sym = str(_sym)
 
 # Simulator default slider values from default patient's baseline expression
 from app.config import DEFAULT_SIM_GENE_1, DEFAULT_SIM_GENE_2, DEFAULT_SIM_GENE_3

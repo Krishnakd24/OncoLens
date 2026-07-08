@@ -12,12 +12,11 @@ from dash import html, dcc
 
 from app.layouts.header import Header
 from app.layouts.summary_cards import SummaryCards
-from app.layouts.control_bar import ControlBar
+from app.layouts.sidebar import Sidebar
 from app.layouts.contour_card import ContourCard
 from app.layouts.expression_card import ExpressionCard
 from app.layouts.hotspot_card import HotspotCard
 from app.layouts.network_card import NetworkCard
-from app.layouts.simulator_card import SimulatorCard
 
 
 # Default network threshold options — kept here so ControlBar and summary cards
@@ -48,71 +47,29 @@ def create_layout(
     sim_val1: float = 5.0,
     sim_val2: float = 5.0,
     sim_val3: float = 5.0,
+    sim_gene_1: str = None,
+    sim_gene_2: str = None,
+    sim_gene_3: str = None,
 ) -> html.Div:
     """
     Assembles the complete unified OncoLens dashboard layout.
 
-    All five visualizations are statically embedded; no tab routing required.
-    Called once at application startup by app.py.
-
-    Parameters
-    ----------
-    n_patients : int
-        Total patients in dataset.
-    n_genes : int
-        Number of variance-filtered genes.
-    n_classes : int
-        Distinct tumor classes.
-    best_pair : str
-        Display string for the Rank-1 gene pair.
-    top_gene : str
-        Symbol of the highest-variance gene.
-    gene_options : list
-        Full annotated gene dropdown options.
-    top_20_options : list
-        Top-20 recommended pairs for demo-pair-selector.
-    patient_options : list
-        Patient ID dropdown options.
-    default_x, default_y : str
-        Default Gene X / Gene Y probe IDs.
-    default_profile : str
-        Default probe ID for the Expression Explorer.
-    default_patient : str
-        Default patient ID for the simulator.
-    sim_val1, sim_val2, sim_val3 : float
-        Default slider values for the simulator.
+    Follows the 2-column sidebar design.
     """
-    gene_options   = gene_options   or []
-    top_20_options = top_20_options or []
-    patient_options = patient_options or []
+    if gene_options is None: gene_options = []
+    if top_20_options is None: top_20_options = []
+    if patient_options is None: patient_options = []
+
+    # Resolve default simulator genes if none provided
+    if sim_gene_1 is None and len(gene_options) > 0: sim_gene_1 = gene_options[0]["value"]
+    if sim_gene_2 is None and len(gene_options) > 1: sim_gene_2 = gene_options[1]["value"]
+    if sim_gene_3 is None and len(gene_options) > 2: sim_gene_3 = gene_options[2]["value"]
 
     return html.Div(
-        id="oncolens-dashboard",
-        className="oncolens-dashboard",
+        className="app-container",
         children=[
-            # ── Hidden stores for future cross-visualization synchronization ──
-            dcc.Store(id="selected-gene"),
-            dcc.Store(id="selected-patient"),
-
-            # ── 1. Header ──────────────────────────────────────────────────────
-            Header(
-                n_samples=n_patients,
-                n_genes=n_genes,
-                n_classes=n_classes,
-            ),
-
-            # ── 2. Summary cards row ───────────────────────────────────────────
-            SummaryCards(
-                n_patients=n_patients,
-                n_genes=n_genes,
-                n_classes=n_classes,
-                best_pair=best_pair,
-                top_gene=top_gene,
-                network_threshold="r ≥ 0.80",
-            ),
-
-            # ── 3. Global control bar ──────────────────────────────────────────
-            ControlBar(
+            # ── 1. Left Sidebar ────────────────────────────────────────────────
+            Sidebar(
                 gene_options=gene_options,
                 top_20_options=top_20_options,
                 network_threshold_options=NETWORK_THRESHOLD_OPTIONS,
@@ -122,55 +79,40 @@ def create_layout(
                 default_profile=default_profile,
                 default_threshold=DEFAULT_NETWORK_THRESHOLD,
                 default_patient=default_patient,
+                sim_val1=sim_val1,
+                sim_val2=sim_val2,
+                sim_val3=sim_val3,
+                sim_gene_1=sim_gene_1,
+                sim_gene_2=sim_gene_2,
+                sim_gene_3=sim_gene_3,
             ),
 
-            # ── 4. Visualization grid ──────────────────────────────────────────
-            html.Div(
-                className="viz-grid",
+            # ── 2. Main Content Area ───────────────────────────────────────────
+            html.Main(
+                className="main-content",
                 children=[
-
-                    # Row 1: Contour + Expression (side by side)
-                    html.Div(
-                        className="viz-row",
-                        children=[
-                            ContourCard(),
-                            ExpressionCard(),
-                        ]
+                    Header(
+                        n_samples=n_patients,
+                        n_genes=n_genes,
+                        n_classes=n_classes,
                     ),
-
-                    # Row 2: Hotspot + Network (side by side)
-                    html.Div(
-                        className="viz-row",
-                        children=[
-                            HotspotCard(),
-                            NetworkCard(),
-                        ]
+                    SummaryCards(
+                        n_patients=n_patients,
+                        n_genes=n_genes,
+                        n_classes=n_classes,
+                        best_pair=best_pair,
+                        top_gene=top_gene,
+                        network_threshold="0.80",
                     ),
-
-                    # Row 3: Simulator (full width)
+                    # ── 3. Charts Grid (2x2) ───────────────────────────────────
                     html.Div(
-                        className="viz-row viz-row--full",
+                        className="charts-grid",
                         children=[
-                            SimulatorCard(
-                                gene_options=gene_options,
-                                val1=sim_val1,
-                                val2=sim_val2,
-                                val3=sim_val3,
-                            ),
+                            html.Div(ContourCard(), className="viz-slot"),
+                            html.Div(HotspotCard(), className="viz-slot"),
+                            html.Div(NetworkCard(), className="viz-slot"),
+                            html.Div(ExpressionCard(), className="viz-slot"),
                         ]
-                    ),
-                ]
-            ),
-
-            # ── 5. Footer ──────────────────────────────────────────────────────
-            html.Footer(
-                id="dash-footer",
-                className="dash-footer",
-                children=[
-                    html.Span(
-                        "OncoLens v1.0  •  CS661 Visual Analytics Project  •  Group 11  •  "
-                        "Research tool only — not a clinical diagnostic instrument.",
-                        className="footer-text"
                     )
                 ]
             )

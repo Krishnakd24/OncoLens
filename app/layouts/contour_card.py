@@ -22,19 +22,7 @@ def ContourCard() -> html.Div:
             "This pair was automatically selected during preprocessing as one of "
             "the highest subtype-separating gene pairs within the variance-filtered dataset."
         ),
-        style={
-            "display": "none",
-            "backgroundColor": "#EFF6FF",
-            "color": "#2563EB",
-            "border": "1px solid #BFDBFE",
-            "borderRadius": "6px",
-            "padding": "4px 10px",
-            "fontSize": "0.78rem",
-            "fontWeight": "600",
-            "marginBottom": "0.5rem",
-            "letterSpacing": "0.04em",
-            "cursor": "help",
-        }
+        style={"display": "none"}
     )
 
     plot_area = html.Div([

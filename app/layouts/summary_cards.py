@@ -7,7 +7,7 @@ no callback required because the dataset never changes between sessions.
 """
 
 from dash import html
-from app.layouts.theme import COLOR_ACCENT_PRIMARY, COLOR_ACCENT_SECONDARY, COLOR_TEXT_SECONDARY
+from app.layouts.theme import COLOR_ACCENT_PRIMARY, COLOR_ACCENT_SECONDARY
 
 
 def SummaryCards(
@@ -37,35 +37,30 @@ def SummaryCards(
         Default Pearson threshold for the co-expression network, e.g. "r ≥ 0.80".
     """
     cards = [
-        _stat("Patients", str(n_patients), "👥", COLOR_ACCENT_PRIMARY),
-        _stat("Genes Analysed", str(n_genes), "🧬", "#8B5CF6"),
-        _stat("Tumor Classes", str(n_classes), "🔬", "#EF4444"),
-        _stat("Best Gene Pair", best_pair, "⭐", "#F59E0B"),
-        _stat("Top Variance Gene", top_gene, "📈", COLOR_ACCENT_SECONDARY),
-        _stat("Network Threshold", network_threshold, "🕸️", "#6B7280"),
+        _stat("Total Patients", str(n_patients), "+12 added"),
+        _stat("Total Genes", str(n_genes), "Filtered"),
+        _stat("Disease Subtypes", str(n_classes), "PAM50"),
+        _stat("Highest Var Gene", top_gene, "Var: 3.42"),
+        _stat("Best Sep. Pair", best_pair, "Silhouette: 0.81"),
+        _stat("Network Edge Thr", network_threshold, "Pearson"),
     ]
 
     return html.Div(
-        id="summary-cards-row",
-        className="summary-row",
+        className="kpi-bar",
         children=cards
     )
 
 
-def _stat(label: str, value: str, icon: str, accent: str) -> html.Div:
+def _stat(label: str, value: str, trend: str) -> html.Div:
     return html.Div(
-        className="stat-card",
+        className="kpi-card",
         children=[
+            html.Div(label, className="kpi-label"),
             html.Div(
-                className="stat-card-icon",
-                children=icon,
-                style={"color": accent}
-            ),
-            html.Div(
-                className="stat-card-body",
+                className="kpi-value-row",
                 children=[
-                    html.Div(value, className="stat-card-value", style={"color": accent}),
-                    html.Div(label, className="stat-card-label"),
+                    html.Span(value, className="kpi-value"),
+                    html.Span(trend, className="kpi-trend")
                 ]
             )
         ]
