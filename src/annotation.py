@@ -146,21 +146,32 @@ def main() -> None:
     # Save the annotated matrix
     df_final.to_csv(processed_output_path, index=False)
     
-    # 7. Print the exact GENOMIC ANNOTATION REPORT template as requested
+    # 7. Compute dynamic statistics for the report
+    total_genes = len(gene_cols)
+    annotated_count = len(df_final.dropna(subset=["Gene Symbol"]))
+    missing_count = total_genes - annotated_count
+    coverage_pct = (annotated_count / total_genes) * 100 if total_genes > 0 else 0.0
+    
+    unique_chroms = df_final["Chromosome"].dropna().unique()
+    num_chroms = len(unique_chroms)
+    chrom_str = ", ".join(sorted([str(c) for c in unique_chroms])) if num_chroms <= 5 else f"{num_chroms} (including X, Y)"
+    
+    missing_cytoband = len(df_final[df_final["Cytoband"].isna() | (df_final["Cytoband"] == "None")])
+    
     print("=========================================")
     print("GENOMIC ANNOTATION REPORT")
     print("=========================================")
     print("")
-    print(f"Top genes before merge : {TOP_GENE_COUNT}")
-    print("Successfully annotated : 987")
-    print("Missing annotation     : 13")
-    print("Coverage               : 98.7%")
+    print(f"Top genes before merge : {total_genes}")
+    print(f"Successfully annotated : {annotated_count}")
+    print(f"Missing annotation     : {missing_count}")
+    print(f"Coverage               : {coverage_pct:.1f}%")
     print("")
-    print("Unique chromosomes     : 22 + X + Y")
-    print("Genes without cytoband : 5")
+    print(f"Unique chromosomes     : {num_chroms} found")
+    print(f"Genes without cytoband : {missing_cytoband}")
     print("")
     print("Annotated dataset saved to:")
-    print("data/processed/brain_top1000_annotated.csv")
+    print(f"data/processed/brain_top{TOP_GENE_COUNT}_annotated.csv")
     print("=========================================")
 
 if __name__ == "__main__":

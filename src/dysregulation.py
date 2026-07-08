@@ -68,22 +68,29 @@ def get_sample_mappings(df_preprocessed: pd.DataFrame) -> Tuple[Dict[str, str], 
 def compute_normal_stats(
     df_annotated: pd.DataFrame, 
     normal_samples: List[str], 
-    epsilon: float = 1e-6
+    percentile_floor: float = 5.0
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Computes mean and standard deviation across normal controls for each gene,
-    identifying flat/zero-variance genes.
+    applying robust regularization against near-zero-variance genes.
+
+    Instead of an arbitrary epsilon threshold that masks genes out, we compute a
+    biologically meaningful floor: the 5th percentile of all gene standard
+    deviations across normal samples. Genes with std < floor get their std
+    clamped UP to the floor, ensuring they still contribute to the DI but cannot
+    dominate through division-by-near-zero (which amplifies microarray noise).
 
     Args:
         df_annotated (pd.DataFrame): The annotated gene expression DataFrame (genes as rows).
         normal_samples (List[str]): List of normal sample ID columns.
-        epsilon (float): Threshold to define zero standard deviation.
+        percentile_floor (float): Percentile of std distribution to use as the
+            regularization floor. Default 5.0 (the 5th percentile).
 
     Returns:
         Tuple[np.ndarray, np.ndarray, np.ndarray]:
             - mean_normal: Array of means for each gene.
-            - std_normal: Array of standard deviations for each gene.
-            - valid_mask: Boolean mask indicating genes that pass the variance filter (not skipped).
+            - std_normal: Array of regularized standard deviations for each gene.
+            - valid_mask: Boolean mask (all True after regularization; kept for API compat).
     """
     # Extract only the normal sample columns
     normal_data = df_annotated[normal_samples].to_numpy()
@@ -91,9 +98,21 @@ def compute_normal_stats(
     mean_normal = np.mean(normal_data, axis=1)
     std_normal = np.std(normal_data, axis=1, ddof=1)  # Sample standard deviation (ddof=1)
     
-    # Identify flat or near-zero variance genes in normal controls
-    # If std is close to zero, z-score computation would fail (division by zero)
-    valid_mask = std_normal >= epsilon
+    # ── Robust Regularization ────────────────────────────────────────────────
+    # Compute the 5th percentile of all gene standard deviations as a robust
+    # biological floor.  Any gene with std < floor is clamped up to floor.
+    # This avoids division-by-near-zero while keeping ALL genes in the DI.
+    sigma_floor = float(np.percentile(std_normal[std_normal > 0], percentile_floor))
+    sigma_floor = max(sigma_floor, 1e-8)  # Absolute safety net
+    
+    n_clamped = int(np.sum(std_normal < sigma_floor))
+    std_normal = np.maximum(std_normal, sigma_floor)
+    
+    print(f"  Regularization floor (P{percentile_floor:.0f}): {sigma_floor:.6f}")
+    print(f"  Genes clamped to floor: {n_clamped} / {len(std_normal)}")
+    
+    # All genes are now valid after clamping (no masking needed)
+    valid_mask = np.ones(len(std_normal), dtype=bool)
     
     return mean_normal, std_normal, valid_mask
 
@@ -200,7 +219,7 @@ def generate_validation_plot(df_di: pd.DataFrame) -> Tuple[Path, Path]:
     plt.savefig(processed_plot_path, dpi=300, bbox_inches='tight')
     
     # Save to artifact directory
-    artifact_dir = Path("C:/Users/HP/.gemini/antigravity/brain/ba6bf013-025c-4dc1-ad26-4f14408f93b9")
+    artifact_dir = Path("C:/Users/dhruv/.gemini/antigravity/brain/c2eb589e-1013-4280-97e6-898b9b06146e")
     artifact_plot_path = artifact_dir / "patient_DI_boxplot.png"
     if artifact_dir.exists():
         plt.savefig(artifact_plot_path, dpi=300, bbox_inches='tight')

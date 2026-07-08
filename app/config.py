@@ -13,5 +13,11 @@ DEFAULT_SIM_GENE_1 = "229012_at"
 DEFAULT_SIM_GENE_2 = "212993_at"
 DEFAULT_SIM_GENE_3 = "217763_s_at"
 
-# Softmax temperature parameter for centroid distance conversion
-SIMULATOR_TEMPERATURE = 20.0
+# Softmax temperature for centroid distance → probability conversion.
+# Temperature is now computed DYNAMICALLY at runtime as:
+#   T = SIMULATOR_TEMPERATURE_SCALE * std(baseline_distances)
+# This ensures the 3-gene perturbation signal is always amplified
+# relative to the 1000-dimensional baseline noise floor.
+# The static fallback is used only if std ≈ 0 (degenerate case).
+SIMULATOR_TEMPERATURE_SCALE = 0.35   # Scaling factor applied to distance std dev
+SIMULATOR_TEMPERATURE_FALLBACK = 5.0  # Fallback T if distance spread is degenerate

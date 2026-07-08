@@ -2,39 +2,40 @@
 OncoLens Theme Constants.
 
 Centralises all visual design tokens used across layout builders and callbacks.
-Changing PLOT_TEMPLATE here switches every Plotly chart theme simultaneously.
+Premium Dark Mode & Glassmorphism Theme.
 """
 
 # ── Plotly chart template ─────────────────────────────────────────────────────
-PLOT_TEMPLATE = "plotly_white"
+PLOT_TEMPLATE = "plotly_dark"
 
 # ── Page / surface colors ─────────────────────────────────────────────────────
-COLOR_BG        = "#F5F7FA"   # Page background
-COLOR_SURFACE   = "#FFFFFF"   # Card / panel background
-COLOR_BORDER    = "#E5E7EB"   # Subtle borders
-COLOR_BORDER_MED = "#D1D5DB"  # Medium borders
+COLOR_BG        = "#0A0A0B"   # Deepest background
+COLOR_SURFACE   = "#111113"   # Sidebar / Card surface
+COLOR_BORDER    = "#1E293B"   # Border slate-800
+COLOR_BORDER_MED = "#334155"  # slate-700
 
 # ── Typography ────────────────────────────────────────────────────────────────
-COLOR_TEXT_PRIMARY   = "#1F2937"   # Main body text
-COLOR_TEXT_SECONDARY = "#6B7280"   # Muted labels
-COLOR_TEXT_MUTED     = "#9CA3AF"   # Placeholder / disabled
+COLOR_TEXT_PRIMARY   = "#E2E8F0"   # slate-200
+COLOR_TEXT_SECONDARY = "#94A3B8"   # slate-400
+COLOR_TEXT_MUTED     = "#64748B"   # slate-500
 
 # ── Accent palette ────────────────────────────────────────────────────────────
-COLOR_ACCENT_PRIMARY   = "#2563EB"  # Primary blue
-COLOR_ACCENT_SECONDARY = "#14B8A6"  # Teal
-COLOR_ACCENT_WARN      = "#F59E0B"  # Amber
-COLOR_ACCENT_DANGER    = "#EF4444"  # Red
+COLOR_ACCENT_PRIMARY   = "#3B82F6"  # Bright electric blue
+COLOR_ACCENT_SECONDARY = "#2DD4BF"  # Neon teal
+COLOR_ACCENT_WARN      = "#FBBF24"  # Bright amber
+COLOR_ACCENT_DANGER    = "#F87171"  # Bright coral/red
 
 # ── Plotly figure background / grid ──────────────────────────────────────────
-PLOT_PAPER_BG = COLOR_SURFACE
-PLOT_PLOT_BG  = "#FAFBFC"     # Very slight off-white inside axes
-PLOT_GRID     = "#E5E7EB"
-PLOT_ZEROLINE = "#D1D5DB"
+PLOT_PAPER_BG = "rgba(0,0,0,0)"     # Transparent to let CSS surface show through
+PLOT_PLOT_BG  = "rgba(0,0,0,0)"     # Transparent for depth
+PLOT_GRID     = "#2A2A30"           # Design specific grid color
+PLOT_ZEROLINE = "#334155"
 PLOT_TICK_COLOR = COLOR_TEXT_SECONDARY
 PLOT_TITLE_COLOR = COLOR_TEXT_PRIMARY
 PLOT_AXIS_LABEL_COLOR = COLOR_TEXT_SECONDARY
 
 # ── Clinical subtype palette ──────────────────────────────────────────────────
+# Maintained for biological consistency, but brightened slightly for dark mode contrast
 SUBTYPE_COLORS = {
     "normal":                "#10B981",   # Emerald
     "ependymoma":            "#3B82F6",   # Blue

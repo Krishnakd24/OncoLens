@@ -1,317 +1,394 @@
 /* ================================================================
-   OncoLens — Unified Full HD Dashboard Stylesheet
-   Light scientific theme · 1920×1080 optimised
+   OncoLens — Premium Dark Mode Glassmorphism Theme
    ================================================================ */
-
-/* ── Google Fonts loaded via external_stylesheets in app.py ────── */
 
 /* ── Box-sizing reset ─────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
-/* ── html / body: full-height anchors ────────────────────────── */
+/* ── Design tokens ─────────────────────────────────────────────── */
+:root {
+    --space-2xs: 4px;
+    --space-xs: 8px;
+    --space-sm: 12px;
+    --space-md: 16px;
+    --space-lg: 20px;
+    --space-xl: 28px;
+    --space-2xl: 40px;
+
+    --surface-glass: rgba(17, 24, 39, 0.7);
+    --surface-glass-soft: rgba(17, 24, 39, 0.5);
+    --border-subtle: rgba(55, 65, 81, 0.6);
+    --toolbar-shadow: 0 16px 28px -18px rgba(0, 0, 0, 0.65);
+}
+
+/* ── html / body ────────────────────────── */
 html {
-    height: 100%;
+    min-height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(75, 85, 99, 0.7) transparent;
 }
 
 body {
-    height: 100%;
+    min-height: 100vh;
     margin: 0;
     padding: 0;
-    overflow: hidden;
-    background: #F5F7FA;
-    color: #1F2937;
-    font-family: 'Inter', 'Outfit', -apple-system, BlinkMacSystemFont,
-                 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #090e17 0%, #0B1121 100%);
+    background-attachment: fixed;
+    color: #F9FAFB;
+    font-family: 'Inter', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 14px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
 }
 
-/* ── Dash internal wrappers — must all be 100% height ────────── */
-/* Without these, height:100vh on .oncolens-dashboard has nothing
-   to anchor to because the immediate parent is height:auto.     */
+/* Themed scrollbar so page-level scrolling reads as a deliberate choice */
+html::-webkit-scrollbar { width: 10px; }
+html::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb {
+    background: rgba(75, 85, 99, 0.7);
+    border-radius: 10px;
+    border: 2px solid #0B1121;
+}
+html::-webkit-scrollbar-thumb:hover { background: rgba(96, 165, 250, 0.6); }
+
+/* ── Dash internal wrappers ────────── */
+/* Previously height:100% + overflow:hidden here — and on every ancestor
+   down through .oncolens-dashboard — forced the entire app into exactly
+   one viewport height. When five charts needed more room than was left
+   over after the header/KPI/controls chrome, the excess was silently
+   clipped instead of scrolled. min-height lets the page grow to fit its
+   content instead of crushing it. */
 #react-entry-point,
 #_dash-global-error-container,
 #_dash-global-error-container > div,
 #_dash-app-content {
-    height: 100%;
+    min-height: 100%;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
 }
 
-/* ── Root dashboard wrapper ───────────────────────────────────── */
-.oncolens-dashboard {
-    display: flex;
-    flex-direction: column;
-    height: 100%;          /* fills the Dash wrapper chain above */
+
+/* ================================================================
+   1. APP CONTAINER & LAYOUT
+   ================================================================ */
+.app-container {
+    height: 100vh;
+    width: 100vw;
+    background-color: #0A0A0B;
+    color: #E2E8F0;
     overflow: hidden;
-    background: #F5F7FA;
+    display: flex;
+    font-family: 'Inter', sans-serif;
 }
 
 /* ================================================================
-   HEADER  (<header id="dash-header">)
+   2. SIDEBAR
    ================================================================ */
-#dash-header {
+.sidebar {
+    width: 288px;
+    background-color: #111113;
+    border-right: 1px solid #1E293B;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    z-index: 20;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+}
+
+.sidebar-header {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 1.25rem;
+    border-bottom: 1px solid #1E293B;
+    flex-shrink: 0;
+    background: linear-gradient(to right, #161618, #111113);
+}
+
+.sidebar-logo-icon {
+    width: 20px;
+    height: 20px;
+    color: #2dd4bf;
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-logo-text {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(to right, #2dd4bf, #818cf8);
+    margin: 0;
+}
+
+.sidebar-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.sidebar-body::-webkit-scrollbar {
+    width: 4px;
+}
+.sidebar-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar-body::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sidebar-section-title {
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.sidebar-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.sidebar-label {
+    font-size: 10px;
+    color: #94A3B8;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.sidebar-divider {
+    border: none;
+    border-top: 1px solid #1E293B;
+    margin: 0;
+}
+
+/* ================================================================
+   3. MAIN CONTENT AREA
+   ================================================================ */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: #0A0A0B;
+}
+
+.top-header {
+    height: 56px;
+    border-bottom: 1px solid #1E293B;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 50px;
-    min-height: 50px;
-    padding: 0 1.25rem;
-    background: #FFFFFF;
-    border-bottom: 1px solid #E5E7EB;
+    padding: 0 1.5rem;
+    background-color: #111113;
     flex-shrink: 0;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-    z-index: 100;
 }
 
-.header-brand {
-    display: flex;
-    align-items: baseline;
-    gap: 0.35rem;
-}
-
-.brand-onco {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: #2563EB;
-    letter-spacing: -0.04em;
-}
-
-.brand-lens {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: #14B8A6;
-    letter-spacing: -0.04em;
-}
-
-.brand-subtitle {
-    font-size: 0.73rem;
-    font-weight: 400;
-    color: #9CA3AF;
-    margin-left: 0.6rem;
-    letter-spacing: 0.01em;
-}
-
-.header-meta {
+.header-left-group {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 1rem;
+}
+
+.header-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #E2E8F0;
+    margin: 0;
 }
 
 .header-pill {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
-    background: #F3F4F6;
-    border: 1px solid #E5E7EB;
-    border-radius: 20px;
-    padding: 2px 9px;
+    gap: 0.5rem;
+    background-color: #1A1A1D;
+    border: 1px solid #334155;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
     font-size: 0.75rem;
 }
 
-.pill-value {
-    font-weight: 700;
-    color: #2563EB;
-    font-family: 'Outfit', sans-serif;
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background-color: #10B981;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.pill-label {
-    color: #6B7280;
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+
+.pill-text {
+    color: #CBD5E1;
+}
+
+.pill-divider {
+    color: #64748B;
+    margin: 0 0.25rem;
+}
+
+.search-container {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748B;
+    font-size: 0.875rem;
+}
+
+.search-input {
+    background-color: #1A1A1D;
+    border: 1px solid #334155;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem 0.25rem 1.75rem;
+    font-size: 0.75rem;
+    color: #E2E8F0;
+    width: 12rem;
+    transition: all 0.2s;
+    outline: none;
+}
+.search-input:focus {
+    border-color: #14b8a6;
 }
 
 /* ================================================================
-   SUMMARY CARDS ROW
+   4. KPI BAR
    ================================================================ */
-.summary-row {
+.kpi-bar {
+    height: 80px;
+    border-bottom: 1px solid #1E293B;
     display: flex;
-    align-items: stretch;
-    gap: 0.6rem;
-    padding: 0.45rem 1.25rem;
-    background: #FFFFFF;
-    border-bottom: 1px solid #E5E7EB;
+    background-color: #0A0A0B;
     flex-shrink: 0;
+    padding: 0.75rem;
+    gap: 0.75rem;
     overflow-x: auto;
 }
+.kpi-bar::-webkit-scrollbar { display: none; }
 
-.stat-card {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
-    border-radius: 9px;
-    padding: 0.4rem 0.75rem;
+.kpi-card {
     flex: 1;
-    min-width: 120px;
-    white-space: nowrap;
+    min-width: 140px;
+    background-color: #111113;
+    border: 1px solid #1E293B;
+    border-radius: 0.5rem;
+    padding: 0.625rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.stat-card-icon {
-    font-size: 1.1rem;
-    line-height: 1;
-    flex-shrink: 0;
+.kpi-label {
+    font-size: 10px;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
 }
 
-.stat-card-body {
+.kpi-value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.kpi-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #F1F5F9;
+}
+
+.kpi-trend {
+    font-size: 10px;
+    color: #94A3B8;
+}
+
+/* ================================================================
+   5. CHARTS GRID
+   ================================================================ */
+.charts-grid {
+    flex: 1;
+    padding: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    min-height: 0;
+    background-color: #0A0A0B;
+}
+
+.viz-slot {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    min-height: 0;
 }
 
-.stat-card-value {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.stat-card-label {
-    font-size: 0.68rem;
-    color: #6B7280;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-}
-
-/* ================================================================
-   GLOBAL CONTROL BAR
-   ================================================================ */
-.controls-bar {
-    display: flex;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 0.5rem 0.75rem;
-    padding: 0.45rem 1.25rem;
-    background: #FFFFFF;
-    border-bottom: 1px solid #E5E7EB;
-    flex-shrink: 0;
-}
-
-.ctrl-group {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 130px;
-    max-width: 200px;
-}
-
-.ctrl-group--btn {
-    min-width: 70px;
-    max-width: 90px;
-}
-
-.ctrl-label {
-    font-size: 0.67rem;
-    font-weight: 600;
-    color: #6B7280;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0;
-    padding: 0;
-    white-space: nowrap;
-}
-
-.btn-reset {
-    background: #EF4444;
-    color: #FFFFFF;
-    border: none;
-    border-radius: 7px;
-    padding: 5px 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s ease, transform 0.1s ease;
-    font-family: 'Inter', sans-serif;
-    white-space: nowrap;
-    line-height: 1.4;
-}
-
-.btn-reset:hover {
-    background: #DC2626;
-    transform: translateY(-1px);
-}
-
-/* ================================================================
-   VISUALIZATION GRID
-   ================================================================ */
-.viz-grid {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 0;           /* take remaining height, allow shrinking */
-    min-height: 0;         /* CRITICAL: lets flex children shrink below content-size */
-    padding: 0.6rem 1rem 0.4rem 1rem;
-    gap: 0.6rem;
-    overflow: hidden;
-    background: #F5F7FA;
-}
-
-/* Each side-by-side row of 2 cards */
-.viz-row {
-    display: flex;
-    flex-direction: row;
-    gap: 0.6rem;
-    flex: 1 1 0;
-    min-height: 0;         /* CRITICAL: prevents rows from expanding beyond viewport */
-}
-
-/* Simulator row: fixed height, does not flex-grow */
-.viz-row--full {
-    flex: 0 0 auto;
-    height: 280px;
-    min-height: 260px;
-    max-height: 300px;
-}
-
-/* ================================================================
-   VIZ CARD — shared container
-   ================================================================ */
 .viz-card {
-    background: #FFFFFF;
-    border: 1px solid #E5E7EB;
-    border-radius: 12px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    background-color: #111113;
+    border: 1px solid #1E293B;
+    border-radius: 0.5rem;
     display: flex;
     flex-direction: column;
     flex: 1 1 0;
     min-width: 0;
     min-height: 0;
     overflow: hidden;
-    transition: box-shadow 0.2s ease;
 }
 
-.viz-card:hover {
-    box-shadow: 0 3px 14px rgba(37, 99, 235, 0.09);
-}
-
-.viz-card--full-width {
-    flex: 1 1 0;           /* fills the full-width row */
-}
-
-/* Card title row */
 .viz-card-header {
-    padding: 0.45rem 0.9rem 0.3rem 0.9rem;
-    border-bottom: 1px solid #F3F4F6;
-    flex-shrink: 0;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #1E293B;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #161618;
 }
 
 .viz-card-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.84rem;
-    font-weight: 700;
-    color: #111827;
-    margin: 0 0 1px 0;
-    letter-spacing: -0.01em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #CBD5E1;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
 }
 
 .viz-card-subtitle {
@@ -321,294 +398,282 @@ body {
     font-weight: 400;
 }
 
-/* Card body — flex column so children stack vertically */
 .viz-card-body {
-    display: flex;
-    flex-direction: column;   /* column so plot + stats stack correctly */
-    flex: 1 1 0;
-    min-height: 0;
-    padding: 0.4rem 0.6rem;
-    overflow: hidden;
-}
-
-/* Panels with a side-details column need row direction */
-#card-expression .viz-card-body,
-#card-hotspot   .viz-card-body,
-#card-network   .viz-card-body {
-    flex-direction: row;
-}
-
-/* Simulator body gets zero padding — its own columns add their own */
-#card-simulator .viz-card-body {
-    padding: 0;
-    overflow: hidden;
-}
-
-.viz-card-footer {
-    padding: 0.35rem 0.9rem;
-    border-top: 1px solid #F3F4F6;
-    flex-shrink: 0;
-}
-
-/* ================================================================
-   CONTOUR CARD specifics
-   ================================================================ */
-.contour-stats-row {
-    display: flex;
-    flex-direction: row;
-    gap: 0.4rem;
-    padding: 0.3rem 0 0 0;
-    flex-shrink: 0;
-}
-
-.mini-stat-card {
     flex: 1;
-    background: #F9FAFB;
-    border: 1px solid #F3F4F6;
-    border-radius: 7px;
-    padding: 0.4rem 0.55rem;
-    font-size: 0.72rem;
-    color: #374151;
-    min-width: 0;
-    overflow: hidden;
-}
-
-/* ================================================================
-   SIDE DETAILS PANEL  (Expression, Hotspot, Network cards)
-   ================================================================ */
-.side-details-panel {
-    width: 200px;
-    min-width: 180px;
-    flex-shrink: 0;
-    background: #F9FAFB;
-    border: 1px solid #F3F4F6;
-    border-radius: 9px;
-    padding: 0.65rem;
-    overflow-y: auto;
-    font-size: 0.75rem;
-    color: #374151;
-    margin-left: 0.5rem;
-}
-
-/* ================================================================
-   SIMULATOR CARD
-   ================================================================ */
-.sim-body {
-    display: flex;
-    flex-direction: row;
-    flex: 1 1 0;
+    position: relative;
     min-height: 0;
-    overflow: hidden;
-}
-
-.sim-left-col {
+    padding: 0.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    width: 285px;
-    flex-shrink: 0;
-    padding: 0.55rem 0.7rem;
-    border-right: 1px solid #F3F4F6;
-    overflow-y: auto;
 }
 
-.sim-gene-selectors {
+#card-expression .viz-card-body,
+#card-hotspot .viz-card-body,
+#card-network .viz-card-body {
+    flex-direction: row;
+}
+
+/* ================================================================
+   6. SIMULATOR SIDEBAR CONTROLS
+   ================================================================ */
+.sim-controls-box {
+    background-color: #161618;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #1E293B;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.75rem;
 }
 
-.sim-gene-row {
+.sim-gene-row-sidebar {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 0.25rem;
 }
 
-.sim-sliders {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    margin-top: 0.2rem;
-}
-
-.sim-slider-row {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.sim-slider-label {
+.sim-gene-row-top {
     display: flex;
     justify-content: space-between;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #374151;
-    min-height: 15px;
+    align-items: center;
 }
 
-.sim-chart-col {
-    flex: 1 1 0;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    padding: 0.55rem 0.45rem;
-    overflow: hidden;
+.sim-slider-val-label {
+    font-size: 10px;
+    color: #94A3B8;
+    font-family: monospace;
 }
 
-.sim-chart-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #374151;
-    margin: 0 0 0.2rem 0;
-    flex-shrink: 0;
+.sim-output-box {
+    background-color: #161618;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #1E293B;
 }
 
-.sim-right-col {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    width: 220px;
-    flex-shrink: 0;
-    padding: 0.55rem 0.7rem;
-    border-left: 1px solid #F3F4F6;
-    overflow-y: auto;
-}
-
-.sim-result-card {
-    background: #F9FAFB;
-    border: 1px solid #F3F4F6;
-    border-radius: 9px;
-    padding: 0.6rem;
+.btn-reset-sidebar {
+    width: 100%;
+    padding: 0.375rem;
+    background-color: #1E293B;
+    color: #E2E8F0;
     font-size: 0.75rem;
-    color: #374151;
-}
-
-.sim-disclaimer {
-    font-size: 0.69rem;
-    color: #9CA3AF;
-    line-height: 1.45;
-}
-
-/* ================================================================
-   FOOTER  (<footer class="dash-footer">)
-   ================================================================ */
-.dash-footer {
+    font-weight: 500;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 24px;
-    min-height: 24px;
-    background: #FFFFFF;
-    border-top: 1px solid #E5E7EB;
-    flex-shrink: 0;
+    gap: 0.375rem;
+}
+.btn-reset-sidebar:hover {
+    background-color: #334155;
 }
 
-.footer-text {
-    font-size: 0.68rem;
-    color: #9CA3AF;
-    letter-spacing: 0.02em;
-}
-
-/* ================================================================
-   DASH GRAPH WRAPPER — makes Plotly graphs fill flex parents
-   ================================================================ */
-
-/* The outer dcc.Graph wrapper */
-.dash-graph {
+.sim-bars-container {
     display: flex;
     flex-direction: column;
-    flex: 1 1 0;
-    min-height: 0;
+    gap: 0.5rem;
+}
+
+.sim-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sim-bar-label {
+    font-size: 10px;
+    width: 32px;
+    color: #E2E8F0;
+}
+
+.sim-bar-track {
+    flex: 1;
+    height: 8px;
+    background-color: #1E293B;
+    border-radius: 4px;
     overflow: hidden;
 }
 
-/* Plotly's own container inside .dash-graph */
-.dash-graph > .js-plotly-plot,
-.dash-graph > div > .js-plotly-plot {
-    flex: 1 1 0;
-    min-height: 0;
+.sim-bar-fill {
+    height: 100%;
+    border-radius: 4px;
 }
 
-/* The SVG inside Plotly — must fill its container */
-.js-plotly-plot .svg-container {
-    height: 100% !important;
+.sim-bar-value {
+    font-size: 10px;
+    font-family: monospace;
+    color: #94A3B8;
 }
+
+/* Fix up the radio toggle */
+.contour-mode-toggle-container {
+    display: flex;
+    background-color: #1A1A1D;
+    border-radius: 0.25rem;
+    padding: 2px;
+    border: 1px solid #1E293B;
+}
+.contour-mode-radio {
+    display: flex;
+    width: 100%;
+}
+.contour-mode-radio label {
+    flex: 1;
+    font-size: 0.75rem;
+    text-align: center;
+    padding: 0.25rem 0;
+    color: #94A3B8;
+    cursor: pointer;
+}
+.contour-mode-radio input[type=radio] {
+    display: none;
+}
+.contour-mode-radio label:has(input:checked) {
+    background-color: #2A2A30;
+    color: #E2E8F0;
+    border-radius: 0.125rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Compact Dropdowns */
+.compact-dropdown .Select-control {
+    background-color: #1A1A1D !important;
+    border: 1px solid #334155 !important;
+    border-radius: 0.25rem !important;
+    min-height: 24px !important;
+    height: 24px !important;
+}
+.compact-dropdown .Select-value {
+    line-height: 22px !important;
+    font-size: 0.75rem !important;
+    color: #E2E8F0 !important;
+}
+.compact-dropdown .Select-input {
+    height: 22px !important;
+}
+.sim-compact-dropdown .Select-control {
+    background-color: transparent !important;
+    border: none !important;
+    min-height: 20px !important;
+    height: 20px !important;
+}
+.sim-compact-dropdown .Select-value {
+    line-height: 20px !important;
+    font-size: 0.75rem !important;
+    color: #CBD5E1 !important;
+    font-weight: 500 !important;
+}
+.sim-compact-dropdown .Select-value-label {
+    color: #CBD5E1 !important;
+}
+
 
 /* ================================================================
    DASH LOADING OVERLAY
    ================================================================ */
 ._dash-loading-callback {
-    opacity: 0.55;
+    opacity: 0.4;
 }
 
 /* ================================================================
-   DROPDOWN — light-theme skin
+   DROPDOWN — Dark theme skin
    ================================================================ */
-/* Dash uses react-select v1 internals at these class names */
 .Select-control {
-    border-color: #E5E7EB !important;
-    background: #FFFFFF !important;
+    border-color: rgba(75, 85, 99, 0.8) !important;
+    background: rgba(17, 24, 39, 0.6) !important;
+    color: #F9FAFB !important;
     border-radius: 7px !important;
     min-height: 28px !important;
     box-shadow: none !important;
 }
 
 .Select-control:hover {
-    border-color: #2563EB !important;
+    border-color: #3B82F6 !important;
 }
 
 .Select-input > input {
     font-size: 0.82rem !important;
-    color: #1F2937 !important;
+    color: #F9FAFB !important;
 }
 
 .Select-menu-outer {
-    border-color: #E5E7EB !important;
+    background: #1F2937 !important;
+    border-color: rgba(75, 85, 99, 0.8) !important;
     border-radius: 8px !important;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5) !important;
     z-index: 9999 !important;
 }
 
 .Select-value-label, .Select-placeholder {
-    color: #374151 !important;
+    color: #E5E7EB !important;
     font-size: 0.82rem !important;
 }
 
 .Select-option {
     font-size: 0.82rem !important;
-    color: #1F2937 !important;
+    color: #D1D5DB !important;
+    background: #1F2937 !important;
 }
 
 .Select-option.is-focused {
-    background: #EFF6FF !important;
+    background: rgba(59, 130, 246, 0.2) !important;
+    color: #F9FAFB !important;
 }
 
 .Select-option.is-selected {
-    background: #2563EB !important;
+    background: #3B82F6 !important;
     color: #FFFFFF !important;
 }
 
-/* RadioItems inline in control bar */
-.form-check-input { cursor: pointer; }
-.form-check-label { cursor: pointer; font-size: 0.82rem; color: #374151; }
+.Select-clear-zone { color: #9CA3AF !important; }
+.Select-arrow { border-color: #9CA3AF transparent transparent !important; }
+
+/* RadioItems */
+.form-check-input { cursor: pointer; accent-color: #3B82F6; }
+.form-check-label { cursor: pointer; font-size: 0.82rem; color: #D1D5DB; }
 
 /* ================================================================
-   SLIDER — light-theme skin
+   SLIDER — Dark theme skin
    ================================================================ */
-.rc-slider-track { background-color: #2563EB; }
-.rc-slider-rail  { background-color: #E5E7EB; }
+.rc-slider-track { background-color: #3B82F6; }
+.rc-slider-rail  { background-color: rgba(75, 85, 99, 0.6); }
 .rc-slider-handle {
-    border-color: #2563EB !important;
-    background: #FFFFFF !important;
-    box-shadow: 0 0 0 2px rgba(37,99,235,0.2) !important;
+    border-color: #3B82F6 !important;
+    background: #0B1121 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
 }
 .rc-slider-handle:hover,
-.rc-slider-handle:active { border-color: #1D4ED8 !important; }
+.rc-slider-handle:active { border-color: #60A5FA !important; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2) !important; }
 
 .rc-slider-tooltip-inner {
     background: #1F2937 !important;
+    border: 1px solid rgba(75, 85, 99, 0.8) !important;
+    color: #F9FAFB !important;
     font-size: 0.72rem !important;
     padding: 2px 7px !important;
     border-radius: 5px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5) !important;
+}
+
+/* ================================================================
+   CUSTOM SCROLLBARS — inner panels
+   ================================================================ */
+.side-details-panel::-webkit-scrollbar,
+.sim-left-col::-webkit-scrollbar,
+.sim-right-col::-webkit-scrollbar {
+    width: 8px;
+}
+.side-details-panel::-webkit-scrollbar-track,
+.sim-left-col::-webkit-scrollbar-track,
+.sim-right-col::-webkit-scrollbar-track {
+    background: transparent;
+}
+.side-details-panel::-webkit-scrollbar-thumb,
+.sim-left-col::-webkit-scrollbar-thumb,
+.sim-right-col::-webkit-scrollbar-thumb {
+    background: rgba(75, 85, 99, 0.6);
+    border-radius: 8px;
 }
