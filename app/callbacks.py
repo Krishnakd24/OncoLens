@@ -15,7 +15,7 @@ from typing import Tuple, Optional
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_score
 import networkx as nx
-from dash import Input, Output, html, Dash, callback_context
+from dash import Input, Output, html, Dash, callback_context, no_update
 from app.layouts.theme import (
     PLOT_TEMPLATE,
     PLOT_PAPER_BG, PLOT_PLOT_BG, PLOT_GRID, PLOT_ZEROLINE,
@@ -98,6 +98,20 @@ def make_stats_card_content(
             ]
         )
     ]
+
+
+def _gene_stat_item(label: str, value, color: str, size: str = "0.85rem", family: Optional[str] = None) -> html.Div:
+    """
+    Compact label/value pair used in the Expression card's gene statistics panel.
+    Kept as a small helper so each stat block stays visually consistent.
+    """
+    strong_style = {"color": color, "fontSize": size}
+    if family:
+        strong_style["fontFamily"] = family
+    return html.Div([
+        html.Span(label, style={"fontSize": "0.68rem", "color": "#64748b", "display": "block"}),
+        html.Strong(str(value), style=strong_style)
+    ])
 
 
 def make_pair_quality_card_content(sil_score: float, interpretation: str, color: str) -> list:
@@ -580,17 +594,17 @@ def register_callbacks(
             plot_bgcolor=PLOT_PLOT_BG,
             paper_bgcolor=PLOT_PAPER_BG,
             legend=dict(
-                font=dict(color=PLOT_TITLE_COLOR),
+                font=dict(color=PLOT_TITLE_COLOR, size=10),
                 bgcolor="rgba(255,255,255,0.9)",
                 bordercolor=COLOR_BORDER,
                 borderwidth=1,
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1
+                orientation="v",
+                yanchor="top",
+                y=1,
+                xanchor="left",
+                x=1.02
             ),
-            margin=dict(l=50, r=40, t=70, b=50),
+            margin=dict(l=50, r=115, t=50, b=15),
             hovermode="closest"
         )
         
@@ -747,7 +761,7 @@ def register_callbacks(
             paper_bgcolor=PLOT_PAPER_BG,
             margin=dict(l=45, r=20, t=15, b=25), # Tight margins to completely use the canvas
             hovermode="closest",
-            height=490 # height directly controls track-to-track row spacing
+            height=400 # height directly controls track-to-track row spacing
         )
         
         return fig
@@ -1285,13 +1299,19 @@ def register_callbacks(
             yref="y"
         )
         
-        # Annotate overall mean line
+        # Annotate overall mean line — anchored to paper space so it sits just
+        # outside the plotting area instead of floating over the last violin
         fig.add_annotation(
-            x=len(groups_valid) - 0.55,
+            xref="paper",
+            x=1.01,
+            xanchor="left",
             y=mean_overall,
+            yref="y",
+            yanchor="middle",
             text=f"Overall Mean: {mean_overall:.4f}",
             showarrow=False,
-            yshift=10,
+            align="left",
+            textangle=-90,
             font=dict(color=PLOT_TICK_COLOR, size=10, family="Inter")
         )
         
@@ -1301,106 +1321,67 @@ def register_callbacks(
             template=PLOT_TEMPLATE,
             title=dict(
                 text=title_text,
-                font=dict(size=16, color=PLOT_TITLE_COLOR, family="Outfit")
+                font=dict(size=16, color=PLOT_TITLE_COLOR, family="Outfit"),
+                x=0.5,
+                y=0.98,
+                xanchor='center'
             ),
             xaxis=dict(
-                title=dict(text="Clinical Cohort", font=dict(color=PLOT_AXIS_LABEL_COLOR, size=12)),
-                tickfont=dict(color=PLOT_TICK_COLOR),
+                title=dict(text="Clinical Cohort", font=dict(color=PLOT_AXIS_LABEL_COLOR, size=12), standoff=10),
+                tickfont=dict(color=PLOT_TICK_COLOR, size=10),
                 gridcolor=PLOT_GRID,
                 categoryorder="array",
-                categoryarray=[f"{s.replace('_', ' ').title()}<br>(N={len(df_expr_global[df_expr_global['type'] == s])})" for s in SUBTYPE_ORDER]
+                categoryarray=[f"{s.replace('_', ' ').title()}<br>(N={len(df_expr_global[df_expr_global['type'] == s])})" for s in SUBTYPE_ORDER],
+                tickangle=45
             ),
             yaxis=dict(
-                title=dict(text="Log2 Normalized Expression Value", font=dict(color=PLOT_AXIS_LABEL_COLOR, size=12)),
+                title=dict(text="Log2 Normalized Expression Value", font=dict(color=PLOT_AXIS_LABEL_COLOR, size=12), standoff=10),
                 tickfont=dict(color=PLOT_TICK_COLOR),
                 gridcolor=PLOT_GRID,
                 zerolinecolor=PLOT_ZEROLINE,
+                automargin=True
             ),
             plot_bgcolor=PLOT_PLOT_BG,
             paper_bgcolor=PLOT_PAPER_BG,
-            margin=dict(l=60, r=40, t=70, b=60),
-            hovermode="closest"
+            margin=dict(l=75, r=40, t=50, b=70),
+            hovermode="closest",
+            autosize=True
         )
         
         # 6. Render Statistics and ANOVA details card
+        # Compacted so all 6 rows fit within the 220px-wide side panel without
+        # needing to scroll: no header, Gene Symbol + Probe Set ID share a row,
+        # and every remaining stat is built through the shared _gene_stat_item
+        # helper. Colors are kept exactly as they were — only spacing/sizing
+        # changed, since that's what was actually causing the overflow.
+        pvalue_color = "#10b981" if p_value_str.startswith("<") or (
+            not p_value_str.startswith("Error") and float(p_value_str.split('e')[0]) < 0.05
+        ) else "#cbd5e1"
+
+        stat_rows = [
+            (("Gene Symbol", symbol, "#10b981", "1.05rem", "Outfit"),
+             ("Probe Set ID", probe_id, "#f8fafc", "0.82rem", None)),
+            (("Chromosome", f"Chr {chrom}" if pd.notna(chrom) else "Unmapped", "#cbd5e1", "0.85rem", None),
+             ("Cytoband", cytoband if pd.notna(cytoband) else "Unmapped", "#cbd5e1", "0.85rem", None)),
+            (("Variance Rank", f"#{int(rank)}" if pd.notna(rank) else "N/A", "#f59e0b", "0.85rem", None),
+             ("ANOVA p-value", p_value_str, pvalue_color, "0.85rem", None)),
+            (("Mean Expression", f"{mean_overall:.4f}", "#cbd5e1", "0.85rem", None),
+             ("Median Expression", f"{median_overall:.4f}", "#cbd5e1", "0.85rem", None)),
+            (("Std Deviation", f"{std_overall:.4f}", "#cbd5e1", "0.85rem", None),
+             ("Min Expression", f"{min_overall:.4f}", "#cbd5e1", "0.85rem", None)),
+            (("Max Expression", f"{max_overall:.4f}", "#cbd5e1", "0.85rem", None),
+             ("Sample Count", f"{n_samples}", "#cbd5e1", "0.85rem", None)),
+        ]
+
         card_content = [
-            html.H3("Gene Statistics", style={"borderBottom": "1px solid #1e293b", "paddingBottom": "0.75rem", "color": "#f8fafc", "marginTop": "0"}),
             html.Div(
-                style={"display": "flex", "flexDirection": "column", "gap": "1.1rem", "marginTop": "1.5rem"},
+                style={"display": "flex", "flexDirection": "column", "gap": "0.55rem", "marginTop": "0.3rem"},
                 children=[
-                    html.Div([
-                        html.Span("Gene Symbol", style={"fontSize": "0.85rem", "color": "#64748b", "display": "block"}),
-                        html.Strong(symbol, style={"color": "#10b981", "fontSize": "1.6rem", "fontFamily": "Outfit"})
-                    ]),
-                    html.Div([
-                        html.Span("Probe Set ID", style={"fontSize": "0.85rem", "color": "#64748b", "display": "block"}),
-                        html.Strong(probe_id, style={"color": "#f8fafc", "fontSize": "1.1rem"})
-                    ]),
                     html.Div(
-                        style={"display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "1rem"},
-                        children=[
-                            html.Div([
-                                html.Span("Chromosome", style={"fontSize": "0.85rem", "color": "#64748b", "display": "block"}),
-                                html.Strong(f"Chr {chrom}" if pd.notna(chrom) else "Unmapped", style={"color": "#cbd5e1", "fontSize": "1rem"})
-                            ]),
-                            html.Div([
-                                html.Span("Cytoband", style={"fontSize": "0.85rem", "color": "#64748b", "display": "block"}),
-                                html.Strong(cytoband if pd.notna(cytoband) else "Unmapped", style={"color": "#cbd5e1", "fontSize": "1rem"})
-                            ])
-                        ]
-                    ),
-                    html.Div(
-                        style={"display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "1rem"},
-                        children=[
-                            html.Div([
-                                html.Span("Variance Rank", style={"fontSize": "0.85rem", "color": "#64748b", "display": "block"}),
-                                html.Strong(f"#{int(rank)}" if pd.notna(rank) else "N/A", style={"color": "#f59e0b", "fontSize": "1rem"})
-                            ]),
-                            html.Div([
-                                html.Span("ANOVA p-value", style={"fontSize": "0.85rem", "color": "#64748b", "display": "block"}),
-                                html.Strong(p_value_str, style={"color": "#10b981" if p_value_str.startswith("<") or (not p_value_str.startswith("Error") and float(p_value_str.split('e')[0]) < 0.05) else "#cbd5e1", "fontSize": "1rem"})
-                            ])
-                        ]
-                    ),
-                    html.Div(
-                        style={"display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "1rem"},
-                        children=[
-                            html.Div([
-                                html.Span("Mean Expression", style={"fontSize": "0.85rem", "color": "#64748b", "display": "block"}),
-                                html.Strong(f"{mean_overall:.4f}", style={"color": "#cbd5e1", "fontSize": "1rem"})
-                            ]),
-                            html.Div([
-                                html.Span("Median Expression", style={"fontSize": "0.85rem", "color": "#64748b", "display": "block"}),
-                                html.Strong(f"{median_overall:.4f}", style={"color": "#cbd5e1", "fontSize": "1rem"})
-                            ])
-                        ]
-                    ),
-                    html.Div(
-                        style={"display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "1rem"},
-                        children=[
-                            html.Div([
-                                html.Span("Std Deviation", style={"fontSize": "0.85rem", "color": "#64748b", "display": "block"}),
-                                html.Strong(f"{std_overall:.4f}", style={"color": "#cbd5e1", "fontSize": "1rem"})
-                            ]),
-                            html.Div([
-                                html.Span("Min Expression", style={"fontSize": "0.85rem", "color": "#64748b", "display": "block"}),
-                                html.Strong(f"{min_overall:.4f}", style={"color": "#cbd5e1", "fontSize": "1rem"})
-                            ])
-                        ]
-                    ),
-                    html.Div(
-                        style={"display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "1rem"},
-                        children=[
-                            html.Div([
-                                html.Span("Max Expression", style={"fontSize": "0.85rem", "color": "#64748b", "display": "block"}),
-                                html.Strong(f"{max_overall:.4f}", style={"color": "#cbd5e1", "fontSize": "1rem"})
-                            ]),
-                            html.Div([
-                                html.Span("Sample Count", style={"fontSize": "0.85rem", "color": "#64748b", "display": "block"}),
-                                html.Strong(f"{n_samples}", style={"color": "#cbd5e1", "fontSize": "1rem"})
-                            ])
-                        ]
+                        style={"display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "0.6rem", "alignItems": "start"},
+                        children=[_gene_stat_item(*left), _gene_stat_item(*right)]
                     )
+                    for left, right in stat_rows
                 ]
             )
         ]
@@ -1443,7 +1424,7 @@ def register_callbacks(
         # Ignore reset button initial render/mount triggers (when n_clicks is 0 or None)
         if triggered_id == "simulator-reset-btn" and (n_clicks is None or n_clicks == 0):
             print("  update_simulator_slider_bounds: Ignored reset button initial render trigger.")
-            return [dash.no_update] * 9
+            return [no_update] * 9
             
         if not patient_id:
             results = (0, 15, 5, 0, 15, 5, 0, 15, 5)
@@ -1659,7 +1640,7 @@ def register_callbacks(
                 x=x_vals,
                 y=y_names,
                 orientation="h",
-                width=0.8,  # Maximized bar thickness (occupies 80% of vertical slot)
+                width=0.85,  # Maximized bar thickness (occupies 85% of vertical slot)
                 marker=dict(
                     color=colors,
                     opacity=opacities_list,
@@ -1676,20 +1657,24 @@ def register_callbacks(
             fig.update_layout(
                 template=PLOT_TEMPLATE,
                 showlegend=False,  # Plotly legend completely removed
+                dragmode=False,    # Disable rubber-band zoom / pan gestures entirely
+                bargap=0.15,       # Tighter gaps so bars fill more of the row height
                 xaxis=dict(
                     showgrid=False,   # Hide grid lines
                     zeroline=False,
                     tickfont=dict(color=PLOT_TICK_COLOR, size=10),
                     range=[0, 100],   # Similarity scale up to 100%
+                    fixedrange=True,  # Lock this chart — no zoom/pan like the other plots
                 ),
                 yaxis=dict(
                     showticklabels=False,  # Hide subtype names from Y-axis
                     showgrid=False,        # Hide grid lines
                     type="category",
+                    fixedrange=True,  # Lock this chart — no zoom/pan like the other plots
                 ),
                 plot_bgcolor=PLOT_PLOT_BG,
                 paper_bgcolor=PLOT_PAPER_BG,
-                margin=dict(l=10, r=20, t=8, b=20)  # Restrict margins to completely fill container
+                margin=dict(l=10, r=45, t=8, b=20)  # Wider right margin so outside labels (e.g. "72.8%") never clip
             )
             
             # 3. Predicted class card (redesigned for compact light theme)
@@ -1737,7 +1722,7 @@ def register_callbacks(
             outputs = (fig, prediction_card, distance_card, labels[0], labels[1], labels[2])
             print(f"  Outputs (Lengths prediction_card={len(prediction_card)}, distance_card={len(distance_card)}): Successfully returned.")
             return outputs
-        except Exception as e:
+        except Exception:
             import traceback
             print("\n==================== EXCEPTION ====================")
             traceback.print_exc()

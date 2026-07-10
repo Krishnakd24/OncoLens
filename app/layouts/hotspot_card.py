@@ -35,6 +35,7 @@ def HotspotCard(
 
     # Plot area stretching to full width and height
     plot_area = html.Div(
+        className="sim2-chart",
         style={
             "flex": "1",
             "display": "flex",
@@ -48,6 +49,7 @@ def HotspotCard(
                 color="#2563EB",
                 children=dcc.Graph(
                     id="hotspots-plot",
+                    className="dash-graph",
                     config={"displayModeBar": True, "responsive": True},
                     style={"height": "100%", "minHeight": "240px"},
                 )

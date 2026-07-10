@@ -127,6 +127,74 @@ body {
 }
 
 /* ================================================================
+   SUMMARY CARDS ROW  (#summary-cards-row)
+   Six KPI stat cards displayed as a compact fixed-height strip
+   between the header and the main dashboard area.
+   ================================================================ */
+
+#summary-cards-row,
+.summary-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.55rem;
+    height: 44px;
+    min-height: 44px;
+    flex-shrink: 0;
+    padding: 0 1rem;
+    background: #F9FAFB;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.stat-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+    padding: 0 0.65rem;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.stat-card-icon {
+    font-size: 1.05rem;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.stat-card-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.stat-card-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stat-card-label {
+    font-size: 0.63rem;
+    font-weight: 500;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ================================================================
    VISUALIZATION COLUMNS
    ================================================================ */
 /* ================================================================
@@ -589,7 +657,7 @@ body {
 
     padding:0.6rem;
 
-    overflow-y:auto;
+    overflow:hidden;
 
     margin-left:0.45rem;
 }
@@ -631,24 +699,24 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0px;                        /* ← spacing between genes   */
-    padding: 8px 10px;
+    padding: 6px 10px;
     border-right: 1px solid #E5E7EB;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .sim2-patient-row {
     display: flex;
     align-items: flex-end;
     gap: 6px;
-    padding-bottom: 6px;
-    margin-bottom: 2px;
+    padding-bottom: 4px;
+    margin-bottom: 1px;
     border-bottom: 1px solid #F3F4F6;
 }
 
 .sim2-gene-block {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
 }
 
 .sim2-slider-label {
@@ -657,20 +725,52 @@ body {
     font-size: 10px;
     font-weight: 600;
     color: #4B5563;
-    min-height: 13px;
-    margin-top: 2px;
+    min-height: 12px;
+    margin-top: 1px;
 }
 
 /* ── RIGHT: Results Panel ────────────────────────────────────── */
+/* Styled to match the native Plotly legend used on the Contour card:
+   a bordered "chip" box, wraps onto a 2nd row instead of squeezing
+   or breaking words mid-label. */
 .sim2-html-legend {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    flex-wrap: nowrap;
-    padding: 6px 0 2px 0;
-    background: #FFFFFF;
+    gap: 4px 14px;
+    row-gap: 4px;
+    width: fit-content;
+    max-width: 100%;
+    margin: 4px auto 2px auto;
+    padding: 2px 10px;
+    background: #F3F4F6;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
     flex-shrink: 0;
+}
+
+.sim2-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.sim2-legend-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;   /* circle, matching Plotly's scatter markers */
+    flex-shrink: 0;
+}
+
+.sim2-legend-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #4B5563;
+    white-space: nowrap;
 }
 
 .sim2-right{
@@ -688,14 +788,17 @@ body {
     width: 100%;
     overflow: hidden;
 }
-/* Ensure dcc.Loading wrappers propagate height to the Plotly graph */
-.sim2-chart > div,
-.sim2-chart > div > div,
-.sim2-chart > div > div > div {
+.sim2-chart > div:first-child,
+.sim2-chart > div:first-child > div:first-child,
+.sim2-chart > div:first-child > div:first-child > div:first-child {
     flex: 1 1 0;
     min-height: 0;
     display: flex;
     flex-direction: column;
+}
+
+.sim2-chart div:empty {
+    display: none !important;
 }
 
 .sim2-results{
@@ -784,7 +887,8 @@ body {
     border-color: #E5E7EB !important;
     background: #FFFFFF !important;
     border-radius: 7px !important;
-    min-height: 28px !important;
+    height: 26px !important;
+    min-height: 26px !important;
     box-shadow: none !important;
 }
 
@@ -792,9 +896,15 @@ body {
     border-color: #2563EB !important;
 }
 
+.Select-input {
+    height: 24px !important;
+}
+
 .Select-input > input {
     font-size: 0.82rem !important;
     color: #1F2937 !important;
+    padding: 0 !important;
+    height: 24px !important;
 }
 
 .Select-menu-outer {
@@ -804,9 +914,31 @@ body {
     z-index: 9999 !important;
 }
 
-.Select-value-label, .Select-placeholder {
+.Select-value, .Select-placeholder {
+    line-height: 24px !important;
+    height: 24px !important;
     color: #374151 !important;
     font-size: 0.82rem !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.Select-value-label {
+    color: #374151 !important;
+    font-size: 0.82rem !important;
+    line-height: 24px !important;
+}
+
+.Select-arrow-zone {
+    height: 24px !important;
+    line-height: 24px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.Select-clear-zone {
+    height: 24px !important;
+    line-height: 24px !important;
 }
 
 .Select-option {
@@ -845,4 +977,18 @@ body {
     font-size: 0.72rem !important;
     padding: 2px 7px !important;
     border-radius: 5px !important;
+}
+
+/* Spacing and styling for inline radio buttons in toolbar */
+.contour-radio label {
+    margin-right: 15px;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #475569;
+}
+.contour-radio input {
+    margin-right: 5px;
+    cursor: pointer;
 }

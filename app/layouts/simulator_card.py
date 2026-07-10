@@ -79,18 +79,10 @@ def SimulatorCard(
         className="sim2-html-legend",
         children=[
             html.Div(
-                style={"display": "flex", "alignItems": "center", "gap": "4px", "marginRight": "12px"},
+                className="sim2-legend-item",
                 children=[
-                    html.Span(
-                        style={
-                            "display": "inline-block",
-                            "width": "10px",
-                            "height": "10px",
-                            "backgroundColor": color,
-                            "borderRadius": "2px"
-                        }
-                    ),
-                    html.Span(name, style={"fontSize": "10px", "fontWeight": "600", "color": "#4B5563"})
+                    html.Span(className="sim2-legend-dot", style={"backgroundColor": color}),
+                    html.Span(name, className="sim2-legend-label"),
                 ]
             ) for name, color in legend_items
         ]
@@ -109,10 +101,12 @@ def SimulatorCard(
                     dcc.Loading(
                         type="circle",
                         color="#2563EB",
+                        parent_style={"height": "100%", "flex": "1 1 0", "display": "flex", "flexDirection": "column"},
                         children=dcc.Graph(
                             id="simulator-plot",
+                            className="dash-graph",
                             config={"responsive": True, "displayModeBar": False},
-                            style={"height": "100%"},
+                            style={"height": "100%", "flex": "1 1 0"},
                         ),
                     ),
                 ]

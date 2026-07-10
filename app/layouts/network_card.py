@@ -54,15 +54,20 @@ def NetworkCard(
             dcc.Loading(
                 type="circle",
                 color="#2563EB",
+                parent_style={"flex": "1", "display": "flex", "flexDirection": "column", "minHeight": "0"},
+                style={"flex": "1", "display": "flex", "flexDirection": "column"},
                 children=dcc.Graph(
                     id="network-plot",
+                    className="dash-graph",
                     config={
                         "displayModeBar": True,
                         "responsive": True,
                     },
                     style={
-                        "height": "340px",   # or 360px
+                        "flex": "1",
+                        "height": "100%",
                         "width": "100%",
+                        "minHeight": "200px",
                         "display": "block",
                     },
                 ),

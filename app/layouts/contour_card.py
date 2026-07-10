@@ -51,17 +51,6 @@ def ContourCard(
                             style=dd_style,
                         )
                     ]),
-                    # Demo Pair
-                    html.Div(className="toolbar-control", children=[
-                        html.Label("Demo Pair", className="ctrl-label"),
-                        dcc.Dropdown(
-                            id="demo-pair-selector",
-                            options=top_20_options,
-                            value=1,
-                            clearable=True,
-                            style=dd_style,
-                        )
-                    ]),
                 ],
             ),
             html.Div(
@@ -74,7 +63,7 @@ def ContourCard(
                             {"label": " Points + Contours", "value": "both"},
                         ],
                         value="scatter",
-                        inline=False,
+                        inline=True,
                         className="contour-radio",
                     ),
                 ],
@@ -82,52 +71,39 @@ def ContourCard(
         ],
     )
 
-    # Demo badge (hidden until default pair is active)
-    demo_badge = html.Div(
-        id="demo-badge",
-        children="★ Best Demonstration Pair",
-        title=(
-            "This pair was automatically selected during preprocessing as one of "
-            "the highest subtype-separating gene pairs within the variance-filtered dataset."
-        ),
-        style={
-            "display": "none",
-            "backgroundColor": "#EFF6FF",
-            "color": "#2563EB",
-            "border": "1px solid #BFDBFE",
-            "borderRadius": "6px",
-            "padding": "4px 10px",
-            "fontSize": "0.78rem",
-            "fontWeight": "600",
-            "marginBottom": "0.5rem",
-            "letterSpacing": "0.04em",
-            "cursor": "help",
-        }
-    )
-
-
-
     plot_area = html.Div(
         children=[
             dcc.Loading(
                 type="circle",
                 color="#2563EB",
+                parent_style={"flex": "1", "display": "flex", "flexDirection": "column", "minHeight": "0", "minWidth": "0"},
+                style={"flex": "1", "display": "flex", "flexDirection": "column", "minHeight": "0", "minWidth": "0"},
                 children=dcc.Graph(
                     id="contour-plot",
+                    className="dash-graph",
                     config={
                         "displayModeBar": True,
                         "responsive": True,
                     },
                     style={
-                        "height": "340px",      # try 340–350
+                        "flex": "1",
+                        "height": "100%",
                         "width": "100%",
+                        "minHeight": "380px",
+                        "minWidth": "0",
                         "display": "block",
                     },
                 ),
             )
         ],
         style={
-            "margin-top": "2px",
+            "flex": "1",
+            "display": "flex",
+            "flexDirection": "column",
+            "minWidth": "0",
+            "minHeight": "0",
+            "overflow": "hidden",
+            "marginTop": "2px",
         },
     )
 
@@ -141,6 +117,8 @@ def ContourCard(
                 "flexDirection": "column",
                 "flex": "1",
                 "minHeight": "0",
+                "minWidth": "0",
+                "overflow": "hidden",
             },
             children=[
 
@@ -156,7 +134,9 @@ def ContourCard(
                     style={
                         "flex": "1",
                         "minHeight": "0",
+                        "minWidth": "0",
                         "marginTop": "0",
+                        "overflow": "hidden",
                     },
                     children=[plot_area],
                 ),

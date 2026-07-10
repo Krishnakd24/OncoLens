@@ -39,6 +39,7 @@ def ExpressionCard(
     )
 
     plot_col = html.Div(
+        className="sim2-chart",
         style={"flex": "1", "minWidth": "0"},
         children=[
             dcc.Loading(
@@ -46,6 +47,7 @@ def ExpressionCard(
                 color="#2563EB",
                 children=dcc.Graph(
                     id="profiles-plot",
+                    className="dash-graph",
                     config={"displayModeBar": True, "responsive": True},
                     style={"height": "100%", "minHeight": "240px"},
                 )
@@ -56,7 +58,7 @@ def ExpressionCard(
     details_col = html.Div(
         className="side-details-panel",
         style={
-            "width": "220px",
+            "width": "260px",
             "flexShrink": "0",
             "display": "flex",
             "flexDirection": "column",
@@ -67,7 +69,7 @@ def ExpressionCard(
             html.Div(
                 id="profiles-details-card",
                 children=[],
-                style={"flex": "1", "overflowY": "auto"}
+                style={"flex": "1", "minHeight": "0"}
             )
         ]
     )

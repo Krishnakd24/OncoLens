@@ -10,7 +10,7 @@ import dash
 import pandas as pd
 from pathlib import Path
 from app.layouts import create_layout
-from app.callbacks import register_callbacks
+from app.callbacks import register_all
 
 # Import configuration settings
 from src.config import (
@@ -177,10 +177,11 @@ app.layout = create_layout(
     sim_val1=_sim_val1,
     sim_val2=_sim_val2,
     sim_val3=_sim_val3,
+    network_threshold=0.80,
 )
 
-# Register event-driven callbacks
-register_callbacks(app, df_expression, df_annotated, df_patient_di, df_variance_ranking, df_top_pairs, df_network_edges)
+# Register event-driven callbacks (split across app/callbacks/ modules)
+register_all(app, df_expression, df_annotated, df_patient_di, df_variance_ranking, df_top_pairs, df_network_edges)
 
 # Expose server wrapper for production WSGI setups
 server = app.server

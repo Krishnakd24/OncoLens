@@ -46,6 +46,7 @@ def create_layout(
     sim_val1: float = 5.0,
     sim_val2: float = 5.0,
     sim_val3: float = 5.0,
+    network_threshold: float = 0.80,
 ) -> html.Div:
     """
     Assembles the complete unified OncoLens dashboard layout.
@@ -60,6 +61,10 @@ def create_layout(
     # Resolve default Gene X and Y selections if not provided
     resolved_default_x = default_x or (gene_options[0]["value"] if gene_options else None)
     resolved_default_y = default_y or (gene_options[1]["value"] if len(gene_options) > 1 else None)
+
+    # Format network threshold for display in SummaryCards
+    _threshold_label = f"r ≥ {network_threshold:.2f}"
+
     return html.Div(
         id="oncolens-dashboard",
         className="oncolens-dashboard",
@@ -82,6 +87,21 @@ def create_layout(
                 n_samples=n_patients,
                 n_genes=n_genes,
                 n_classes=n_classes,
+            ),
+
+            # ============================================================
+            # KPI Summary Strip
+            # ------------------------------------------------------------
+            # Six static stat cards (computed once at startup):
+            #   Patients | Genes | Classes | Best Pair | Top Gene | Network Thr
+            # ============================================================
+            SummaryCards(
+                n_patients=n_patients,
+                n_genes=n_genes,
+                n_classes=n_classes,
+                best_pair=best_pair,
+                top_gene=top_gene,
+                network_threshold=_threshold_label,
             ),
 
             # ============================================================
