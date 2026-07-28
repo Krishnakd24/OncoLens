@@ -109,4 +109,6 @@ In addition to the standard pipeline, the platform has been enhanced with:
 2. **Pathology-Cohort Networks**: Switch between the global co-expression network ("All") and subtype-specific edge lists to isolate molecular patterns in individual disease profiles.
 3. **Dynamic Chromosome Hotspot Zoom**: Clicking a genomic scatter point on the genome-wide track automatically updates the chromosome selector to focus and center the zoom track on that exact chromosome.
 4. **Enhanced Light Theme Aesthetics**: Replaced the default plain gray background with a premium, subtle sky blue (`#EBF3FC`) dashboard background for improved contrast and visual comfort.
-
+   
+## Live here
+https://oncolens-production.up.railway.app/
